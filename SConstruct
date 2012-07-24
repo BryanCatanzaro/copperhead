@@ -64,8 +64,9 @@ def CheckVersion(context, cmd, exp, required, extra_error=''):
         return False
     version = match.group(1)
     exploded_version = version.split('.')
+    required = [str(x) for x in required]
     if not all(map(operator.le, required, exploded_version)):
-        context.Result("%s returned version %s, but we need version %s or better." % (cmd, version, '.'.join(required), extra_error) )
+        context.Result("%s returned version %s, but we need version %s or better. %s" % (cmd, version, '.'.join(required), extra_error) )
         return False
     context.Result(version)
     return True
@@ -100,7 +101,8 @@ def autoconf():
 
     #Ensure we have g++ >= 4.5
     gpp_re = re.compile(r'g\+\+ \(.*\) ([\d\.]+)')
-    conf.CheckVersion('g++ --version', gpp_re, (4,5))
+    if not conf.CheckVersion('g++ --version', gpp_re, (4,5)):
+        raise CompileError("g++ version too old")
     #g++ comes with openmp support builtin
     omp_support = True
     Export('omp_support')
